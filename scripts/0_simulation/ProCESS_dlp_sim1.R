@@ -31,12 +31,9 @@ sim$get_samples_info()$tumour_cells %>% table()
 forest <- sim$get_sample_forest()
 #forest$save("/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/sample_forest_1.sff")
 ## 
-color_palette <- Polychrome::createPalette(nrow(sim$get_samples_info()), seedcolors=c("#000000", "#FFFFFF"))
-plot_forest(forest,highlight_sample = T,color_map = color_palette)
-my_plot_forest(forest = forest,highlight_sample = T,color_sample=color_palette)+
-  theme(legend.position = "none")
+color_palette <- c("A"="goldenrod","C"="forestgreen","B"="purple" )
 
-
+my_plot_forest(forest = forest,highlight_sample = T,color_map = color_palette,horizontal = F,color_sample = F)+theme(legend.position = "none")
 #
 #setwd("/orfeo/cephfs/scratch/cdslab/ggandolfi/process_on_the_fly_muts/reference")
 #m_engine <- MutationEngine(setup_code = "GRCh38",tumour_type = "COADREAD", context_sampling = 20)
@@ -58,34 +55,34 @@ my_plot_forest(forest = forest,highlight_sample = T,color_sample=color_palette)+
 #phylo_forest <- m_engine$place_mutations(forest, num_of_preneoplatic_SNVs=800, num_of_preneoplatic_indels=200)
 #phylo_forest$save("/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/phylo_forest_1.sff")
 #phylo_forest <- load_phylogenetic_forest("/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/phylo_forest_1.sff")
-phylo_forest <- load_phylogenetic_forest("/orfeo/cephfs/scratch/cdslab/shared/process_dlp_data/phylo_forest_1.sff")
-cov <- DLP.coverage(phylo_forest, 20, sample_prefix = "DLP1_")
-cov
-
-no_error_seq <- ErrorlessIlluminaSequencer()
-
-chromosomes <- phylo_forest$get_absolute_chromosome_positions()$chr
-
-results <- parallel::mclapply(
-  chromosomes,
-  function(chr) {
-    simulate_seq(
-      phylo_forest,
-      coverage = cov,
-      write_SAM = F,#TRUE
-      with_normal_sample = FALSE,chromosomes = c(chr),
-      read_size = 150,
-      sequencer = no_error_seq,
-      insert_size_mean = 350,
-      insert_size_stddev = 10,
-      missed_SID_statistics=F, germline_statistics=F,
-      wide_format=FALSE,
-      #output_dir = "/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/sequencing_dlp1",
-      update_SAM = FALSE #TRUE
-    )
-  },
-  mc.cores = 4
-)
-
-saveRDS(object = results,file = "/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/seq_res_1.rds")
-
+# phylo_forest <- load_phylogenetic_forest("/orfeo/cephfs/scratch/cdslab/shared/process_dlp_data/phylo_forest_1.sff")
+# cov <- DLP.coverage(phylo_forest, 20, sample_prefix = "DLP1_")
+# cov
+# 
+# no_error_seq <- ErrorlessIlluminaSequencer()
+# 
+# chromosomes <- phylo_forest$get_absolute_chromosome_positions()$chr
+# 
+# results <- parallel::mclapply(
+#   chromosomes,
+#   function(chr) {
+#     simulate_seq(
+#       phylo_forest,
+#       coverage = cov,
+#       write_SAM = F,#TRUE
+#       with_normal_sample = FALSE,chromosomes = c(chr),
+#       read_size = 150,
+#       sequencer = no_error_seq,
+#       insert_size_mean = 350,
+#       insert_size_stddev = 10,
+#       missed_SID_statistics=F, germline_statistics=F,
+#       wide_format=FALSE,
+#       #output_dir = "/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/sequencing_dlp1",
+#       update_SAM = FALSE #TRUE
+#     )
+#   },
+#   mc.cores = 4
+# )
+# 
+# saveRDS(object = results,file = "/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/seq_res_1.rds")
+# 
