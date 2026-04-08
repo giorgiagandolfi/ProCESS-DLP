@@ -52,7 +52,7 @@ mu_CNA = 0 #2e-10
 mu_INDELs = 1e-9
 ##112707518-112846239 
 CNA_Clone2 = ProCESS::CNA(type = "D", "5",
-                          chr_pos = 107707518, len = 2e7,allele = 0)
+                          from = 107707518, len = 2e7,allele = 0)
 
 ## Drivers for the tumors
 m_engine$add_mutant(mutant_name = "A",
@@ -81,12 +81,14 @@ results <- parallel::mclapply(
     simulate_seq(
       phylo_forest,
       coverage = cov,
-      write_SAM = TRUE,
+      write_SAM = FALSE,
       with_normal_sample = FALSE,chromosomes = c(chr),
       read_size = 150,
       sequencer = no_error_seq,
       insert_size_mean = 350,
       insert_size_stddev = 10,
+      missed_SID_statistics=F, germline_statistics=F,
+      wide_format=FALSE,
       # include_non_sequenced_mutations = TRUE,
       output_dir = "/orfeo/cephfs/scratch/cdslab/ggandolfi/DLP/sequencing_test_500cells",
       update_SAM = TRUE
