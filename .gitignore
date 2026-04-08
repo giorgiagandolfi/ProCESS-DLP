@@ -4,3 +4,5 @@
 **.out
 **.sam
 **.fastq.gz
+**.nextflow*
+**.log
