@@ -197,3 +197,94 @@ DLP.coverage <- function(phylo_forest, overall_coverage,
   
   return(overall_coverage/num_of_DLP_samples)
 }
+
+get_segment_info_cell = function(data, chr, cell, new_from, new_to, keep_columns){
+  data %>%
+    dplyr::filter(cell_id == cell,
+                  chr == !!chr,
+                  begin <= new_from,
+                  end >= new_to) %>%
+    select(all_of(keep_columns))
+}
+
+DLP.uniform_segments <- function(x){
+  out = lapply(x$chr %>% unique(), function(chr) {
+    
+    cli::cli_alert_info("Iterating on {.field {chr}}")
+    cli::cli_h2("Iterating on {.field {chr}}")
+    
+    old_segments = sapply(x$cell_id %>% unique(), function(c) {
+      x %>%
+        dplyr::filter(cell_id == c) %>%
+        dplyr::filter(chr == !!chr) %>%
+        dplyr::pull(seg_id) %>%
+        unique() %>%
+        length()
+    })
+    
+    cli::cli_alert_info("Number of original segments in individual {.cls CNAqc} objects in {.field {chr}}:")
+    #cli::cli_ul(paste(names(old_segments), old_segments, sep = " = "))
+    cat("\n")
+    
+    # Chromosome-specific new breakpoints
+    new_breakpoints = c(
+      x %>%
+        dplyr::filter(chr == !!chr) %>%
+        dplyr::pull(begin),
+      x %>%
+        dplyr::filter(chr == !!chr) %>%
+        dplyr::pull(end)) %>% 
+      unique() %>%
+      sort()
+    
+    cli::cli_alert_info("Found {.field {length(new_breakpoints)}} breakpoints")
+    #cat("\n")
+    
+    #  Separate new breakpoints into segment from and to values
+    new_from = new_breakpoints[ !new_breakpoints == dplyr::last(new_breakpoints)] # last element will not be included in the from column 
+    new_to = new_breakpoints[!new_breakpoints == dplyr::first(new_breakpoints)] # first element will not be included in the to column 
+    
+    # iterate on the new breakpoints to subset the cna piled up 
+    lapply(new_breakpoints[-1] %>% seq_along(), function(i) {
+      
+      # iterate for each sample 
+      lapply(x$cell_id %>% unique(), function(c) {
+        
+        # define which columns must be kept in the new table
+        not_wanted = c("begin", "end", "length", "size", "seg_id", "chr", "cell_id", "n")
+        wanted = setdiff(colnames(x), not_wanted)
+        
+        # get the information for the sample in the new segment 
+        tmp = get_segment_info_cell(x, 
+                                    chr = chr, 
+                                    cell = c, 
+                                    new_from = new_from[i], 
+                                    new_to = new_to[i], 
+                                    keep_columns = wanted)
+        
+        # do some checking on the result
+        if (nrow(tmp) == 0) { # there is no information on copy number on the new segment: insert NA as value of all the columns, except from, to, segment_id and sample_id
+          
+          tmp_v2 = rep(NA, ncol(tmp))  
+          names(tmp_v2) = colnames(tmp)
+          
+          tmp = tmp_v2 %>% 
+            tibble::as_tibble_row()
+        }
+        
+        # create a tibble with the information on the new breakpoints and include the previously retrieved information 
+        tidyr::tibble(chr = chr, 
+                      begin = new_from[i], 
+                      end = new_to[i], 
+                      cell_id = c) %>% 
+          dplyr::bind_cols(tmp) %>% 
+          dplyr::mutate(seg_id = paste(chr, begin, end, sep = ":")) 
+        
+      }) %>% do.call(bind_rows, .)
+    }) %>% do.call(bind_rows, .)
+  })  %>% do.call(bind_rows, .)
+  
+  out <- out %>% 
+    filter(end - begin > 1)
+  return(out)
+}
