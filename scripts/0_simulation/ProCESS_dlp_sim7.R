@@ -2,13 +2,17 @@ rm(list=ls())
 library(ProCESS)
 library(dplyr)
 library(ggplot2)
-source("/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/scripts/utils/DLP.R")
-source("/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/scripts/utils/utils_plot.R")
+source("../utils/DLP.R")
+source("../utils/utils_plot.R")
 set.seed(12345)
-dir.create("/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/dlp_simulation_7/")
-setwd("/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/dlp_simulation_7/")
+args <- commandArgs(trailingOnly = TRUE)
+outdir <- args[1]
+
+
+dir.create(outdir)
+setwd(outdir)
 sim_id <- "DPL7"
-sim <- TissueSimulation(name = sim_id,save_snapshots = T)
+sim <- TissueSimulation(name = sim_id,save_snapshots = F)
 sim$add_mutant(name = "A", growth_rates = 0.1, death_rates = 0)
 sim$place_cell("A", 500, 500)
 sim$run_up_to_size(species = 'A', 3000)
@@ -36,17 +40,17 @@ DLP.sample(sim, bbox1$lower_corner, bbox1$upper_corner, sample_prefix=paste0(sim
 sim$get_samples_info()$tumour_cells %>% table()
 
 forest <- sim$get_sample_forest()
-forest$save("/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/dlp_simulation_7/sample_forest_7.sff")
+forest$save(paste0(outdir,"sample_forest.sff"))
 ## Only for plotting purpose
-color_palette <- c("A"="goldenrod","C"="forestgreen","B"="purple" )
-my_plot_forest(forest = forest,highlight_sample = T,color_map = color_palette,horizontal = F,color_sample = F)+theme(legend.position = "none")
+# color_palette <- c("A"="goldenrod","C"="forestgreen","B"="purple" )
+# my_plot_forest(forest = forest,highlight_sample = T,color_map = color_palette,horizontal = F,color_sample = F)+theme(legend.position = "none")
 
-setwd("/orfeo/cephfs/scratch/cdslab/ggandolfi/process_on_the_fly_muts/reference")
+# setwd("/orfeo/cephfs/scratch/cdslab/ggandolfi/process_on_the_fly_muts/reference")
 m_engine <- MutationEngine(setup_code = "GRCh38",tumour_type = "COADREAD", context_sampling = 20)
 
 
 mu_SNV = 1e-8
-mu_CNA = 5e-12
+# mu_CNA = 5e-10
 mu_INDELs = 1e-9
 
 CNA_Clone2 = ProCESS::CNA(type = "D", "5",
@@ -57,12 +61,12 @@ CNA_Clone3 = ProCESS::CNA(type = "A", "1",
                           from = 10000000, len = 2e7)
 ## Drivers for the tumors
 m_engine$add_mutant(mutant_name = "A",
-                    passenger_rates = c(SNV = mu_SNV, CNA = 0,indel=mu_INDELs),drivers = list("APC R1450*",CNA_Clone1))
-m_engine$add_mutant(mutant_name = "B",passenger_rates = c(SNV = mu_SNV, CNA = mu_CNA,indel=mu_INDELs),
+                    passenger_rates = c(SNV = mu_SNV, CNA = 1e-12,indel=mu_INDELs),drivers = list("APC R1450*",CNA_Clone1))
+m_engine$add_mutant(mutant_name = "B",passenger_rates = c(SNV = mu_SNV, CNA = 1e-11,indel=mu_INDELs),
                     drivers = list(CNA_Clone2))
-m_engine$add_mutant(mutant_name = "C",passenger_rates = c(SNV = mu_SNV, CNA = mu_CNA,indel=mu_INDELs),drivers = list("KRAS G12D",CNA_Clone3))
+m_engine$add_mutant(mutant_name = "C",passenger_rates = c(SNV = mu_SNV, CNA = 5e-11,indel=mu_INDELs),drivers = list("KRAS G12D",CNA_Clone3))
 
 m_engine$add_exposure(time = 0,coefficients = c(SBS1 = 0.15,SBS5 = 0.40,
                                                 SBS18 = 0.15,SBS17b = 0.20,ID1 = 0.40,ID2 = 0.40,ID18=0.2,SBS88 = 0.10))
 phylo_forest <- m_engine$place_mutations(forest, num_of_preneoplatic_SNVs=800, num_of_preneoplatic_indels=200)
-phylo_forest$save("/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/dlp_simulation_7/phylo_forest_7.sff")
+phylo_forest$save(paste0(outdir,"phylo_forest.sff"))

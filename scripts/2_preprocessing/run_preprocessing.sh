@@ -7,14 +7,17 @@
 #SBATCH --output=Preprocess_DLP.out
 #SBATCH --error=Preprocess_DLP.err
 #SBATCH --job-name=Preprocess_DLP
+#SBATCH --array=1-2%2 ### change this with the number of your sampled cells 
+
 
 module load singularity
+## change this with the path to the singularity image
 image="/orfeo/cephfs/scratch/cdslab/ggandolfi/process_on_the_fly_muts/process_on_the_fly_v2.sif"
-# change with your path to the simulate_tissue.R and simulate_mutation.R scripts
-base="/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/scripts/2_preprocessing"
-phylo_path="/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/dlp_simulation_6/phylo_forest_6.sff"
-outdir="/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/sequencing_dlp6"
+# change with your path to the github clones repo
+base="/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/"
+phylo_path="/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/dlp_simulation_7/phylo_forest_7.sff"
+outdir="/orfeo/cephfs/scratch/cdslab/ggandolfi/Github/ProCESS-DLP/sequencing_dlp7"
 
 
 
-singularity exec --bind /orfeo:/orfeo --no-home $image Rscript $base/preprocess_SAM.R $phylo_path $outdir
+singularity exec --bind /orfeo:/orfeo --no-home $image Rscript "$base/scripts/2_preprocessing/preprocess_SAM.R" $phylo_path $outdir $SLURM_ARRAY_TASK_ID

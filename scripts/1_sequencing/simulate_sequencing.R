@@ -12,6 +12,7 @@ args <- commandArgs(trailingOnly = TRUE)
 cell_idx <- as.numeric(args[1])
 phylo_path <- args[2]
 outdir <- args[3]
+sc_coverage <- as.numeric(args[4])
 print(cell_idx)
 
 phylo_forest <- load_phylogenetic_forest(phylo_path)
@@ -28,7 +29,7 @@ subforest <-  phylo_forest$get_subforest_for(cell_name)
 
 no_error_seq <- ErrorlessIlluminaSequencer()
 
-dir.create(path = paste0(outdir,"/sequencing_",cell_name))
+dir.create(path = paste0(outdir,"/sequencing_",cell_name),recursive = T)
 			 
 chromosomes <- subforest$get_absolute_chromosome_positions()$chr
 
@@ -38,7 +39,7 @@ results <- parallel::mclapply(
   function(chr) {
     simulate_seq(
       subforest,
-      coverage = 0.1,
+      coverage = sc_coverage,
       write_SAM = TRUE,
       with_normal_sample = FALSE,chromosomes = c(chr),
       read_size = 150,
