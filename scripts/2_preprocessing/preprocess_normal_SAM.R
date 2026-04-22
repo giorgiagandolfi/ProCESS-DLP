@@ -5,7 +5,7 @@ args <- commandArgs(trailingOnly = TRUE)
 phylo_path <- args[1]
 outdir <- args[2]
 chunk_id <- args[3]
-chunk_name <- paste0("0",chunk_id)
+chunk_name <- paste0("chunk_0",chunk_id)
 
 phylo_forest <- load_phylogenetic_forest(phylo_path)
 

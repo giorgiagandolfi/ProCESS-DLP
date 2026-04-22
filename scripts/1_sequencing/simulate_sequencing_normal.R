@@ -10,7 +10,7 @@ set.seed(12345)
 
 args <- commandArgs(trailingOnly = TRUE)
 chunk_id <- args[1]
-chunk_name <- paste0("0",chunk_id)
+chunk_name <- paste0("chunk_0",chunk_id)
 phylo_path <- args[2]
 outdir <- args[3]
 bulk_coverage <- as.numeric(args[4])

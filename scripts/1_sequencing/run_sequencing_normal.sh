@@ -7,7 +7,7 @@
 #SBATCH --output=sequencing_normal_%A_%a.out
 #SBATCH --error=sequencing_normal_%A_%a.err
 #SBATCH --job-name=BULK_sequencing_normal
-#SBATCH --array=1-2 ### change this with the number of your sampled cells 
+#SBATCH --array=1-2 ### change this with the number of your coverage chunks 
 
 
 
