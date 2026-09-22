@@ -19,3 +19,7 @@ singularity pull docker://giorgiagandolfi97/process_on_the_fly:v2
 ### DLP-Sim1
 
 Low number of cells ~240.
+
+### DLP-Sim2
+
+Three genetic clones with high passanger copy number rate (1e-9). Total number of sampled cells: 251.
